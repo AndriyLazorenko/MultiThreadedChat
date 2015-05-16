@@ -9,11 +9,8 @@ import java.util.List;
 /**
  * Created by Master on 11-May-15.
  */
-public class Server implements ServerAndSubject{
-    public List<ClientAndObserver> getClients() {
-        return clients;
-    }
-    private List<ClientAndObserver> clients = new ArrayList<ClientAndObserver>();//new
+public class Server {
+
 
     public void start() throws IOException {
         ServerSocket ss = new ServerSocket(10010);
@@ -42,30 +39,6 @@ public class Server implements ServerAndSubject{
         } catch (Exception e) {
             e.printStackTrace();
         }
-    }
-
-    @Override
-    public void registerClient(ClientAndObserver c) {
-        getClients().add(c);
-    }
-
-    @Override
-    public void removeClient(ClientAndObserver c) {
-        getClients().remove(c);
-    }
-
-    @Override
-    public void notifyClients() {
-        for (int i=0;i<clients.size();i++){
-            ClientAndObserver client = (ClientAndObserver) clients.get(i);
-//            client.update();
-        }
-
-    }
-
-    @Override
-    public void messageReceived() {
-        notifyClients();
     }
 }
 

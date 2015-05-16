@@ -8,11 +8,11 @@ import java.util.Scanner;
 /**
  * Created by Master on 11-May-15.
  */
-public class Client implements ClientAndObserver{
+public class Client {
     public static void main(String[] args) throws IOException {
 
         final Socket s = new Socket();
-        s.connect(new InetSocketAddress("192.168.1.38",8888),10000);
+        s.connect(new InetSocketAddress("localhost",10010),10000);
 
         System.out.println("Waiting for server");
         System.out.println(s.isConnected());
@@ -59,8 +59,4 @@ public class Client implements ClientAndObserver{
         }).start();
     }
 
-    @Override
-    public void update(String s) {
-
-    }
 }
