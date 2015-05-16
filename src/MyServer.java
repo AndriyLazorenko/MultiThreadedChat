@@ -7,6 +7,11 @@ import java.util.List;
 /**
  * Created by Master on 11-May-15.
  */
+
+//Реализовать передачу объектов
+    // Реализовать выход из чата пользователя с удалением соответствующих потоков
+    // Разнести по разным классам и пакаджам
+
 public class MyServer {
 
     public static void main(String[] args) throws IOException {
@@ -32,13 +37,13 @@ public class MyServer {
 }
 
     class ListenerThread implements Runnable{
-        ClientsContainer observer;
+        ClientsContainer observers;
         BufferedReader bf;
         int port;
         String ip;
 
         public ListenerThread (ClientsContainer clients, InputStream is, String ip, int port){
-            this.observer = clients;
+            this.observers = clients;
             this.bf = new BufferedReader(new InputStreamReader(is));
             this.ip = ip;
             this.port = port;
@@ -51,7 +56,7 @@ public class MyServer {
                     String s = bf.readLine();
                     if(s != null){
                         String message = ip + ":" + ":" + port + " -> " + s;
-                        observer.sendMessage(message);
+                        observers.sendMessage(message);
                         System.out.println(message);
                     }
                 } catch (IOException e) {
