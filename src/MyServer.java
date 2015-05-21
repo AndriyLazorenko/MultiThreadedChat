@@ -9,7 +9,7 @@ import java.util.*;
  */
 
 //Реализовать передачу объектов
-    // Реализовать выход из чата пользователя с удалением соответствующих потоков
+    // Реализовать передачу XML
     // Разнести по разным классам и пакаджам
 
 public class MyServer {
@@ -18,7 +18,7 @@ public class MyServer {
         Socket client;
         ClientsContainer container = new ClientsContainer();
         Properties properties = new Properties();
-        File file = new File("G:\\ServerProperties.txt");
+        File file = new File("G:\\MegaDrive\\Programming\\Documents ArtCode\\Temp\\ServerProperties.txt");
         FileReader fr = new FileReader(file);
         properties.load(fr);
         ServerSocket ss = new ServerSocket(Integer.parseInt(properties.getProperty("port")));
@@ -26,7 +26,8 @@ public class MyServer {
         while (container.getNumberOfClients()<Integer.parseInt(properties.getProperty("maxUsersSize"))) {
             client = ss.accept();
             container.putClient(client,client.getOutputStream());
-            ListenerThread lth = new ListenerThread(container,client.getInputStream(),client.getInetAddress().toString(),client.getPort());
+            ListenerThread lth = new ListenerThread(container,client,
+                    client.getInputStream(),client.getInetAddress().toString(),client.getPort());
             Thread thi = new Thread(lth);
             thi.start();
 
@@ -40,27 +41,58 @@ public class MyServer {
 
     class ListenerThread implements Runnable{
         ClientsContainer observers;
-        BufferedReader bf;
+        InputStream is;
         int port;
         String ip;
+        Socket client;
 
-        public ListenerThread (ClientsContainer clients, InputStream is, String ip, int port){
+        public ListenerThread (ClientsContainer clients,Socket client, InputStream is, String ip, int port){
             this.observers = clients;
-            this.bf = new BufferedReader(new InputStreamReader(is));
+            this.is = is;
             this.ip = ip;
             this.port = port;
+            this.client = client;
         }
         @Override
         public void run(){
 
-            while (true){
+
                 try {
+                    //Common part
+                    BufferedReader bf = new BufferedReader(new InputStreamReader(is));
                     String s = bf.readLine();
-                    if (s != null) {
-                        String message = ip + ":" + ":" + port + " -> " + s;
-                        observers.sendMessage(message);
-                        System.out.println(message);
+                    switch (s) {
+                        case "serialized": {
+                            while (client.isConnected()){
+                                ObjectInputStream ois = new ObjectInputStream(is);
+                                s = (String) ois.readObject();
+                                if (s != null) {
+                                    String message = ip + ":" + ":" + port + " -> " + s;
+                                    observers.sendMessage(message);
+                                    System.out.println(message);
+                                }
+                            }
+                            break;
+                        }
+                        case "XML": {
+                            while (client.isConnected()){
+
+                            }
+                            break;
+                        }
+                        default: {
+                            while (client.isConnected()) {
+                                s = bf.readLine();
+                                if (s != null) {
+                                    String message = ip + ":" + ":" + port + " -> " + s;
+                                    observers.sendMessage(message);
+                                    System.out.println(message);
+                                }
+                            }
+                            break;
+                        }
                     }
+
                 } catch (SocketException e) {
                     e.printStackTrace();
                     Socket forRemoval = null;
@@ -70,15 +102,15 @@ public class MyServer {
                         }
                     }
                     observers.removeClient(forRemoval);
-                    break;
                 } catch (IOException e) {
                     e.printStackTrace();
-                    break;
+                } catch (ClassNotFoundException e) {
+                    e.printStackTrace();
                 }
-            }
+        }
 
         }
-    }
+
 //    class SpeakerThread implements Runnable{
 //        ClientsContainer observer;
 //        BufferedReader bf;
@@ -111,7 +143,7 @@ public class MyServer {
 //    }
 
     class ClientsContainer {
-        private File file = new File("G://ChatOutput.txt");
+        private File file = new File("G:\\MegaDrive\\Programming\\Documents ArtCode\\Temp\\ChatOutput.txt");
 //        private List<PrintWriter> clients = new LinkedList<>();
         private Map<Socket,PrintWriter> clients = new LinkedHashMap<>();
         private int numberOfClients=0;

@@ -12,55 +12,16 @@ public class Client {
     public static void main(String[] args) throws IOException {
 
         final Socket s = new Socket();
-        s.connect(new InetSocketAddress("localhost",10010),10000);
+        s.connect(new InetSocketAddress("localhost", 10010), 10000);
 
         System.out.println("Waiting for server");
         System.out.println(s.isConnected());
-        System.out.println("Type password friend to send objects");
+        System.out.println("Type 'default', 'serialized' or 'XML' mode to choose a method of sending messages");
 
-        //Client write message
+        //Client has to type keyword to enter object sending mode
 
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    while (true) {
-                        //Client has to type password to enter object sending mode
-                        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
-                        String password = br.readLine();
-                        //Serialized mode
-                        if (password.equals("friend")) {
-                            System.out.println("Type your message. Type break to exit serialized mode");
-                            ObjectOutputStream oos = new ObjectOutputStream(s.getOutputStream());
-                            Scanner console = new Scanner(System.in);
-                            while (true) {
-                                String message = console.nextLine();
-                                if (message.contains("break")){
-                                    break;
-                                }
-                                else {
-                                    oos.writeObject(message);
-                                    oos.flush();
-                                }
-                            }
-                        }
-                        //Normal mode
-                        else {
-                            PrintWriter pw = new PrintWriter(s.getOutputStream());
-                            Scanner console = new Scanner(System.in);
-                            while (true) {
-                                String message = console.nextLine();
-                                pw.println(message);
-                                pw.flush();
-                            }
-                        }
-                    }
-                }catch(IOException e){
-                    e.printStackTrace();
-                }
-
-            }
-        }).start();
+        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+        final String keyword = br.readLine();
 
         //Client read message
 
@@ -72,7 +33,7 @@ public class Client {
                     InputStreamReader adapter = new InputStreamReader(is);
                     BufferedReader br = new BufferedReader(adapter);
                     String remoteMessage = br.readLine();
-                    while (remoteMessage!=null){
+                    while (remoteMessage != null) {
                         System.out.println(remoteMessage);
                         remoteMessage = br.readLine();
                     }
@@ -82,6 +43,86 @@ public class Client {
 
             }
         }).start();
-    }
 
+        switch (keyword) {
+            case "serialized": {
+
+                //Client write message - Serialized mode
+
+                new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            //Common block - sending the keyword to server
+                            PrintWriter pw = new PrintWriter(s.getOutputStream());
+                            pw.print(keyword);
+                            pw.flush();
+                            //Block dependent on keyword
+                                ObjectOutputStream oos = new ObjectOutputStream(s.getOutputStream());
+                                Scanner console = new Scanner(System.in);
+                                while (s.isConnected()) {
+                                    String message = console.nextLine();
+                                    oos.writeObject(message);
+                                    oos.flush();
+                                }
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }).start();
+                break;
+            }
+            case "XML": {
+
+                //XML mode
+
+                new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            //Common block - sending the keyword to server
+                            PrintWriter pw = new PrintWriter(s.getOutputStream());
+                            pw.print(keyword);
+                            pw.flush();
+                            //Block dependent on keyword
+
+                            while (true) {
+
+                            }
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }).start();
+                break;
+            }
+            default: {
+
+                //Normal mode
+
+                new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            //Common block - sending the keyword to server
+                            PrintWriter pw = new PrintWriter(s.getOutputStream());
+                            pw.print(keyword);
+                            pw.flush();
+                            //
+                            Scanner console = new Scanner(System.in);
+                            while (s.isConnected()) {
+                                String message = console.nextLine();
+                                pw.println(message);
+                                pw.flush();
+                            }
+                        } catch (IOException e1) {
+                            e1.printStackTrace();
+                        }
+                    }
+                }).start();
+                break;
+            }
+        }
+
+    }
 }
