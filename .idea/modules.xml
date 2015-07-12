@@ -3,6 +3,7 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/MultiThreadedChat.iml" filepath="$PROJECT_DIR$/MultiThreadedChat.iml" />
+      <module fileurl="file://$PROJECT_DIR$/Serialized/Serialized.iml" filepath="$PROJECT_DIR$/Serialized/Serialized.iml" />
     </modules>
   </component>
 </project>

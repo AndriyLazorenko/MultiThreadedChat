@@ -11,6 +11,10 @@ import java.util.*;
 //Реализовать передачу объектов
     // Реализовать передачу XML
     // Разнести по разным классам и пакаджам
+    //TODO Serialized objects don't work, if client sends a message first via PrintWriter
+    //TODO The modes of communication (XML/String/Serialized) should be rearranged
+    //TODO if the choice is String, a String is passed. OIS doesn't init
+    //TODO if the choice is Object, an Object is passed and OIS inits
 
 public class MyServer {
 
@@ -18,7 +22,7 @@ public class MyServer {
         Socket client;
         ClientsContainer container = new ClientsContainer();
         Properties properties = new Properties();
-        File file = new File("G:\\MegaDrive\\Programming\\Documents ArtCode\\Temp\\ServerProperties.txt");
+        File file = new File("src/Resources/ServerProperties.txt");
         FileReader fr = new FileReader(file);
         properties.load(fr);
         ServerSocket ss = new ServerSocket(Integer.parseInt(properties.getProperty("port")));
@@ -31,6 +35,7 @@ public class MyServer {
             Thread thi = new Thread(lth);
             thi.start();
 
+            //That's a cool little feature
             String message = String.format("New client connection ip %s, port %s\n",
                     client.getInetAddress(),
                     client.getPort());
@@ -45,53 +50,53 @@ public class MyServer {
         int port;
         String ip;
         Socket client;
+        ObjectInputStream ois;
 
-        public ListenerThread (ClientsContainer clients,Socket client, InputStream is, String ip, int port){
+        public ListenerThread (ClientsContainer clients,Socket client, InputStream is, String ip, int port) throws IOException {
             this.observers = clients;
             this.is = is;
             this.ip = ip;
             this.port = port;
             this.client = client;
+            this.ois = new ObjectInputStream(is);
         }
         @Override
         public void run(){
-
-
                 try {
                     //Common part
                     BufferedReader bf = new BufferedReader(new InputStreamReader(is));
                     String s = bf.readLine();
-                    switch (s) {
-                        case "serialized": {
-                            while (client.isConnected()){
-                                ObjectInputStream ois = new ObjectInputStream(is);
-                                s = (String) ois.readObject();
-                                if (s != null) {
-                                    String message = ip + ":" + ":" + port + " -> " + s;
-                                    observers.sendMessage(message);
-                                    System.out.println(message);
+                        switch (s) {
+                            case "serialized": {
+                                while (client.isConnected()) {
+                                    ObjectInputStream ois = new ObjectInputStream(is);
+                                    s = (String) ois.readObject();
+                                    if (s != null) {
+                                        String message = ip + ":" + ":" + port + " -> " + s;
+                                        observers.sendMessage(message);
+                                        System.out.println(message);
+                                    }
                                 }
+                                break;
                             }
-                            break;
-                        }
-                        case "XML": {
-                            while (client.isConnected()){
+                            case "XML": {
+                                while (client.isConnected()) {
 
-                            }
-                            break;
-                        }
-                        default: {
-                            while (client.isConnected()) {
-                                s = bf.readLine();
-                                if (s != null) {
-                                    String message = ip + ":" + ":" + port + " -> " + s;
-                                    observers.sendMessage(message);
-                                    System.out.println(message);
                                 }
+                                break;
                             }
-                            break;
+                            default: {
+                                while (client.isConnected()) {
+                                    s = bf.readLine();
+                                    if (s != null) {
+                                        String message = ip + ":" + ":" + port + " -> " + s;
+                                        observers.sendMessage(message);
+                                        System.out.println(message);
+                                    }
+                                }
+                                break;
+                            }
                         }
-                    }
 
                 } catch (SocketException e) {
                     e.printStackTrace();
@@ -143,7 +148,7 @@ public class MyServer {
 //    }
 
     class ClientsContainer {
-        private File file = new File("G:\\MegaDrive\\Programming\\Documents ArtCode\\Temp\\ChatOutput.txt");
+        private File file = new File("src/Resources/ChatOutput.txt");
 //        private List<PrintWriter> clients = new LinkedList<>();
         private Map<Socket,PrintWriter> clients = new LinkedHashMap<>();
         private int numberOfClients=0;
